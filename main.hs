@@ -47,9 +47,9 @@ WHERE
     g1.t = g2.f AND g2.t = g3.t AND g1.f = g3.f;
 
 -}
-scanIteration :: ID -> Int -> Graph -> ROBDDM (Set.Set (Int, Int), ID)
+scanIteration :: ID -> Int -> Graph -> ROBDDM (Graph, ID)
 scanIteration prevRoot bitsPerVar graph = do
-	loop Set.empty idFalse idFalse idFalse graph
+	loop [] idFalse idFalse idFalse graph
 	where
 		mask = shiftL 1 bitsPerVar - 1
 		hash i = xor (shiftR i bitsPerVar) i .&. mask
@@ -59,7 +59,7 @@ scanIteration prevRoot bitsPerVar graph = do
 				bits = map odd $ take bitsPerVar $ iterate (flip div 2) h
 				vars = map (+ (n * bitsPerVar)) [1..]
 		loop !pass ab bc ac [] = do
-			liftIO $ putStrLn $ show (Set.size pass) ++ " edges pass scan test"
+			liftIO $ putStrLn $ show (length pass) ++ " edges pass scan test"
 			abbc <- logicAND ab bc
 			newRoot <- logicAND abbc ac
 			return (pass, newRoot)
@@ -73,21 +73,23 @@ scanIteration prevRoot bitsPerVar graph = do
 				g1vs = g1f ++ g1t
 				g2vs = g2f ++ g2t
 				g3vs = g3f ++ g3t
-			when False $ liftIO $ do
-				putStrLn $ "f: "++show f++", t: "++show t
-				putStrLn $ "g1vs: "++show g1vs
-				putStrLn $ "g2vs: "++show g2vs
-				putStrLn $ "g3vs: "++show g3vs
 			i1 <- andVars g1vs >>= logicAND prevRoot
 			i2 <- andVars g2vs >>= logicAND prevRoot
 			i3 <- andVars g3vs >>= logicAND prevRoot
-			let	pass' = if i1 == idFalse && i2 == idFalse && i3 == idFalse
+			let	drop = i1 == idFalse && i2 == idFalse && i3 == idFalse
+				pass' = if drop
 					then pass
-					else Set.insert (f,t) pass
+					else (f,t) : pass
+			when False $ liftIO $ do
+				putStrLn $ "f: "++show f++", t: "++show t
+				--putStrLn $ "g1vs: "++show g1vs
+				--putStrLn $ "g2vs: "++show g2vs
+				--putStrLn $ "g3vs: "++show g3vs
+				putStrLn $ "drop: " ++ show drop
 			g1 <- logicOR g1 i1
 			g2 <- logicOR g2 i2
 			g3 <- logicOR g3 i3
-			loop pass' g1 g2 g3 fts
+			pass' `seq` loop pass' g1 g2 g3 fts
 
 run :: Int -> Int -> Int -> IO ()
 run nn ne bb' = do
@@ -110,8 +112,8 @@ run nn ne bb' = do
 				then do
 					liftIO $ do
 						putStrLn "stopped"
-						--putStrLn $ "original graph triangles, sorted: " ++ show (List.sort $ triangles graph)
-						--putStrLn $ "triangles from filtered edges, sorted: " ++ show (List.sort $ triangles $ Set.toList edgesFiltered)
+						putStrLn $ "original graph triangles, sorted: " ++ show (List.sort $ triangles graph)
+						putStrLn $ "triangles from filtered edges, sorted: " ++ show (List.sort $ triangles edgesFiltered)
 				else runScans id' bitsPerVar graph
 main = do
 	args <- getArgs
