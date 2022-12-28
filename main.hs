@@ -97,11 +97,15 @@ run nn ne bb' = do
 		bb = bb3 * 3
 		bfs = 2 ^ bb
 		graph = randomGraph nn ne
+		tgs = triangles graph
+		tgsEdges = Set.fromList $ concatMap (\(a,b,c) -> [(a,b), (b, c), (a, c)]) tgs
+		inTris = filter (flip Set.member tgsEdges) graph
 	putStrLn $ "running test for " ++ show nn ++ " nodes and " ++ show ne ++ " edges in graph and Bloom filter size of " ++ show bfs ++ " bits."
 	when (bb /= bb') $ putStrLn $ "Bloom filter size was rounded up to " ++ show bb ++ " from " ++ show bb' ++ " to be divisible by 3."
 	let	p = fromIntegral ne / fromIntegral nn / fromIntegral (nn - 1)
 		expectedTriangles = product [ fromIntegral i * p | i <- [nn,nn-1,nn-2]] :: Double
 	putStrLn $ printf "expected number of triangles %.3g" expectedTriangles
+	putStrLn $ printf "actual number of triangles is %d, number of edges that occur in traingles %d" (length tgs) (length inTris)
 	evalROBDDM $ runScans idTrue bb3 graph
 	where
 		runScans prevID bitsPerVar graph = do
