@@ -62,6 +62,11 @@ scanIteration prevRoot bitsPerVar graph = do
 			liftIO $ putStrLn $ show (length pass) ++ " edges pass scan test"
 			abbc <- logicAND ab bc
 			newRoot <- logicAND abbc ac
+			sab <- size ab
+			sbc <- size bc
+			sac <- size ac
+			sNewRoot <- size newRoot
+			liftIO $ putStrLn $ "Node count of ab: " ++ show sab ++ ", node count of bc: " ++ show sbc ++ ", node count of ac: " ++ show sac ++ " and node count of newly computed BDD is " ++ show sNewRoot
 			return (pass, newRoot)
 		loop !pass g1 g2 g3 ((f,t):fts) = do
 			let	g1f = hashBits 2 f
@@ -116,8 +121,9 @@ run nn ne bb' = do
 				then do
 					liftIO $ do
 						putStrLn "stopped"
-						putStrLn $ "original graph triangles, sorted: " ++ show (List.sort $ triangles graph)
-						putStrLn $ "triangles from filtered edges, sorted: " ++ show (List.sort $ triangles edgesFiltered)
+						putStrLn $ "filtered triangles equal to unfiltered ones: " ++ show (List.sort (triangles graph) == List.sort (triangles edgesFiltered))
+						--putStrLn $ "original graph triangles, sorted: " ++ show (List.sort $ triangles graph)
+						--putStrLn $ "triangles from filtered edges, sorted: " ++ show (List.sort $ triangles edgesFiltered)
 				else runScans id' bitsPerVar graph
 main = do
 	args <- getArgs

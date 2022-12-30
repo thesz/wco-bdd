@@ -153,6 +153,23 @@ andVars vs = loop sortedVS idTrue
 					else Node (abs v) id idFalse
 				loop vs id
 
+size :: ID -> ROBDDM Int
+size id
+	| id == idFalse || id == idTrue = return 0
+	| otherwise = count (Set.singleton id) (Set.singleton id)
+	where
+		count :: Set.Set ID -> Set.Set ID -> ROBDDM Int
+		count visited front
+			| Set.null front = return $ Set.size visited
+			| otherwise = do
+				nodes <- Map.elems . flip Map.intersection (Map.fromSet (const ()) front) . robddsIdToNode <$> get
+				let	nodeIDs (Node _ a b) = [a, b]
+					ids = Set.delete idFalse $ Set.delete idTrue $ Set.fromList $ concatMap nodeIDs nodes
+					newVisited = Set.union ids visited
+					newFront = Set.difference ids visited
+				count newVisited newFront
+					
+
 collectGarbage :: Set.Set ID -> ROBDDM ()
 collectGarbage roots' = do
 	idToNode <- robddsIdToNode <$> get
