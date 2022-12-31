@@ -39,6 +39,8 @@ WHERE
     g1.t = g2.f AND g2.t = g3.t AND g1.f = g3.f;
 ```
 
+It may be possible to extend algorithm to non-quijoins, though. We can use hashing to buckets for ordering operations, etc.
+
 ### Not much time
 
 This is my weekend project, literally done in a weekend. As I have mainly weekends to work over here, it may take some
@@ -46,12 +48,39 @@ substantial time for this project to come to fruition or to any conclusion.
 
 ## The idea
 
+Let's say you have two tables with two integer fields and you want to find out rows that are row-wise equal. Let's assume that first table contains rows (1, 2) and (1,3) and second table contains rows (1, 2) and (1, 4).
+
+We can assign variables to columns' values. Then the first table represents logic formula (f1=1 /\ f2=2) \/ (f1=1 /\ f2=2) - field 1 is equal to 1 AND field 2 is equal to 2 OR field 1 is equal to 1 and field 2 is equal to 2. The ssecond table represents formula (f1=1 /\ f2=2) \/ (f1=1 /\ f2=4).
+
+If we logically AND these two formulas, we will get a resulting formula (f1=1 \/ f2=2).
+
+The scan for rows that satisfy this resulting formula will result in rows that contains a pair (1, 2) in both tables.
+
+This is all good and easy and well when number of values in rows is small. When it grows, we must fall back to hashing values and use of approximatins like Bloom filters.
+
 ### Block Bloom filter
 
-Block Bloom filter select one or more blocks (usually, cache lines or SIMD vectors) according to one set of hashes and then selects bits inside according to the other sets of hashes.
+Block Bloom filter select one or more blocks (usually, cache lines or SIMD vectors) according to one set of hashes and then selects bits inside blocks according to the other sets of hashes.
 
 Typical Block Bloom filter has two level structure and, if you think about it, represents a relation: for a pair (a,b) first level can be selected from the value of a and structure of second level can be selected from the value of b. Having defined filtering relation for two levels, we can go higher, defining it for an arbitrary number of levels, representing n-ary relations.
 
+
 ### ROBDD representation of a Bloom filter
 
+The example above has three equalities. We assigned to each equality it's own block index. ```g1.t``` and ```g2.f``` share block address for block 1, ```g2.t``` and ```g3.t``` share block address for block 2 and ```g1.t``` and ```g3.f``` share address for block 3. This can be easily extended to more equalities if needed.
 
+Each record in ```g1``` generates a pair of block addresses, for block 1 and block 3. Same goes with other tables, which generate addresses for blocks 1 and 2 (```g2```) and blocks 2 and 3 (```g3```). These addresses are combined with logical OR into three ROBDDs which approximately represent complete relations in our three tables. After that, we combined them with logical AND to approximately represent intersections of all three relations modulo equalities between values.
+
+Then we can reread data and for each pair of block addresses we can verify that they are belong to the final approximation. If the pair does not belong to neither of parts of final approximation, we reject this pair altogether. It cannot participate in any part of final result.
+
+## Complexity of an algorithm
+
+The algorithm has O(SN) complexity, where S is the sum of logarithms of the number of different values in either table and N is the maximum number of rows in any of the tables we scan.
+
+Thus, we do not escape O(NlogN) of dynamic indices of SQLite or merging joins of Postgres.
+
+Our only hope is to be in-memory especially dealing with strings or other relatively heavy data like Postgress arrays.
+
+## Experimental results
+
+TBD
