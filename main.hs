@@ -51,9 +51,12 @@ scanIteration :: ID -> Int -> Graph -> ROBDDM (Graph, ID)
 scanIteration prevRoot bitsPerVar graph = do
 	loop [] idFalse idFalse idFalse graph
 	where
-		mask = shiftL 1 bitsPerVar - 1
+		modulo = shiftL 1 bitsPerVar
+		mask = modulo - 1
 		hash i = xor (shiftR i bitsPerVar) i .&. mask
-		hashBits n i = [ if o then v else negate v | (o, v) <- zip bits vars]
+		hashBits n i =
+			[h + modulo * n]
+			--[ if o then v else negate v | (o, v) <- zip bits vars]
 			where
 				h = hash i
 				bits = map odd $ take bitsPerVar $ iterate (flip div 2) h
