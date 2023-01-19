@@ -129,6 +129,7 @@ run nn ne bb' = do
 						--putStrLn $ "triangles from filtered edges, sorted: " ++ show (List.sort $ triangles edgesFiltered)
 				else runScans id' bitsPerVar graph
 main = do
+	hSetBuffering stdout NoBuffering
 	args <- getArgs
 	case args of
 		[snn, sne, sbb]
