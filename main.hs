@@ -55,8 +55,8 @@ scanIteration prevRoot bitsPerVar graph = do
 		mask = modulo - 1
 		hash i = xor (shiftR i bitsPerVar) i .&. mask
 		hashBits n i =
-			[h + modulo * n]
-			--[ if o then v else negate v | (o, v) <- zip bits vars]
+			--[h + modulo * n]
+			[ if o then v else negate v | (o, v) <- zip bits vars]
 			where
 				h = hash i
 				bits = map odd $ take bitsPerVar $ iterate (flip div 2) h
