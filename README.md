@@ -106,6 +106,7 @@ With 10000 edges (14 bits per variable index) and:
   - resulting BDD has node count of 21541 (11.3x number of graph edges),
   - 2855 edges pass scan test, which is 944 edges more or 49% of additional overhead over correct number of edges.
 
-Results indicate that we have O(number of resulting edges) overhead for final ROBDD node count and number of edges passing the test. We will produce about 1.5^2 more data than is strictly required during final stage, if we choose to implement it in a non-WCO style. That is O((strict number of edges to process)^2), which may qualify as WCO in some sense.
+Results indicate that we have O(number of resulting edges) overhead for final ROBDD node count and number of edges passing the test. We will produce about 1.5^3 more data than is strictly required during final stage, if we choose to implement it in a nested loops style. That is O((strict number of edges to process)^3), which may qualify as WCO in some sense.
 
-We need to store O(number of edges in graph) data for intermediate results.
+We need to store O(number of edges in graph) data for intermediate results. It might be possible to apply zero-supressed decision diagrams to store approximately O(number of nodes in graph) data for intermediate results, but I haven't studied that venue well yet.
+
