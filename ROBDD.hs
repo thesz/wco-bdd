@@ -168,7 +168,9 @@ size id
 					newVisited = Set.union ids visited
 					newFront = Set.difference ids visited
 				count newVisited newFront
-					
+
+dropCaches :: ROBDDM ()
+dropCaches = modify' $ \robdds -> robdds { robddsCachedOp = Map.empty }
 
 collectGarbage :: Set.Set ID -> ROBDDM ()
 collectGarbage roots' = do

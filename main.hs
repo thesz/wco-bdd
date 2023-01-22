@@ -13,6 +13,7 @@ import qualified Data.Set as Set
 
 import System.Environment
 import System.Exit
+import System.IO
 
 import Text.Printf
 
@@ -72,6 +73,7 @@ scanIteration prevRoot bitsPerVar graph = do
 			liftIO $ putStrLn $ "Node count of ab: " ++ show sab ++ ", node count of bc: " ++ show sbc ++ ", node count of ac: " ++ show sac ++ " and node count of newly computed BDD is " ++ show sNewRoot
 			return (pass, newRoot)
 		loop !pass g1 g2 g3 ((f,t):fts) = do
+			dropCaches
 			let	g1f = hashBits 2 f
 				g1t = hashBits 0 t
 				g2f = hashBits 0 f
