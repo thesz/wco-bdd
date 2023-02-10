@@ -85,28 +85,32 @@ Our only hope is to be in-memory especially dealing with strings or other relati
 
 ### Grwoing number triangles
 
-With 10000 edges (14 bits per variable index) and:
+With 10000 nodes (14 bits per variable index) and:
 
 * 80000 edges:
   - actual number of triangles is 471,
   - number of graph edges in triangles is 935,
   - individual pairs have BDD node counts of around 123800 (1.55x number of edges in graph),
   - resulting BDD has node count of 11947 (12.8x number of graph edges),
-  - 1453 edges pass scan test, which is 518 edges more or 55% of additional overhead over correct number of edges.
+  - 1453 edges pass scan test, which is 518 edges more or 55% of additional overhead over correct number of edges,
+  - resulting BDD contains 488 conjunctions.
 * 90000 edges:
   - actual number of triangles is 702,
   - number of graph edges in triangles is 1394
   - individual pairs have BDD node counts of around 135900 (1.51x number of edges in graph),
   - resulting BDD has node count of 16336 (11.7x number of graph edges),
-  - 2084 edges pass scan test, which is 690 edges more or 49% of additional overhead over correct number of edges.
+  - 2084 edges pass scan test, which is 690 edges more or 49% of additional overhead over correct number of edges,
+  - resulting BDD contains 702 conjunctions.
 * 100000 edges:
   - actual number of triangles is 966,
   - number of graph edges in triangles is 1911,
   - individual pairs have BDD node counts of around 147740 (1.48x number of edges in graph),
   - resulting BDD has node count of 21541 (11.3x number of graph edges),
-  - 2855 edges pass scan test, which is 944 edges more or 49% of additional overhead over correct number of edges.
+  - 2855 edges pass scan test, which is 944 edges more or 49% of additional overhead over correct number of edges,
+  - resulting BDD contains 966 conjunctions.
 
 Results indicate that we have O(number of resulting edges) overhead for final ROBDD node count and number of edges passing the test. We will produce about 1.5^3 more data than is strictly required during final stage, if we choose to implement it in a nested loops style. That is O((strict number of edges to process)^3), which may qualify as WCO in some sense.
 
 We need to store O(number of edges in graph) data for intermediate results. It might be possible to apply zero-supressed decision diagrams to store approximately O(number of nodes in graph) data for intermediate results, but I haven't studied that venue well yet.
 
+Also, number of conjunctions (BDD represents a disjunctive normal form) in resulting ROBDD is equal, in our tests, to the number of actual triangles.

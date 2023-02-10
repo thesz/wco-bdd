@@ -168,6 +168,22 @@ size id
 					newVisited = Set.union ids visited
 					newFront = Set.difference ids visited
 				count newVisited newFront
+approximateConjunctions :: ID -> ROBDDM Int
+approximateConjunctions id
+	| id == idFalse || id == idTrue = return 0
+	| otherwise = snd <$> count Map.empty id
+	where
+		count :: Map.Map ID Int -> ID -> ROBDDM (Map.Map ID Int, Int)
+		count visited id
+			| id == idFalse = return (visited, 0)
+			| id == idTrue = return (visited, 1)
+			| Just cnt <- Map.lookup id visited = return (visited, cnt)
+			| otherwise = do
+				Node _ l r <- getNode id
+				(visitedl, cntl) <- count visited l
+				(visitedr, cntr) <- count visitedl r
+				let	cnt = cntl + cntr
+				return (Map.insert id cnt visitedr, cnt)
 
 dropCaches :: ROBDDM ()
 dropCaches = modify' $ \robdds -> robdds { robddsCachedOp = Map.empty }

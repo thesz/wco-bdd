@@ -70,7 +70,8 @@ scanIteration prevRoot bitsPerVar graph = do
 			sbc <- size bc
 			sac <- size ac
 			sNewRoot <- size newRoot
-			liftIO $ putStrLn $ "Node count of ab: " ++ show sab ++ ", node count of bc: " ++ show sbc ++ ", node count of ac: " ++ show sac ++ " and node count of newly computed BDD is " ++ show sNewRoot
+			conjs <- approximateConjunctions newRoot
+			liftIO $ putStrLn $ "Node count of ab: " ++ show sab ++ ", node count of bc: " ++ show sbc ++ ", node count of ac: " ++ show sac ++ " and node count of newly computed BDD is " ++ show sNewRoot ++ ", approximate number of elements " ++ show conjs
 			return (pass, newRoot)
 		loop !pass g1 g2 g3 ((f,t):fts) = do
 			dropCaches
