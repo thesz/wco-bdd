@@ -113,4 +113,5 @@ Results indicate that we have O(number of resulting edges) overhead for final RO
 
 We need to store O(number of edges in graph) data for intermediate results. It might be possible to apply zero-supressed decision diagrams to store approximately O(number of nodes in graph) data for intermediate results, but I haven't studied that venue well yet.
 
-Also, number of conjunctions (BDD represents a disjunctive normal form) in resulting ROBDD is equal, in our tests, to the number of actual triangles.
+Also, number of conjunctions (BDD represents a disjunctive normal form) in resulting ROBDD is equal, in our tests, to the number of actual triangles. It may not be always the case, because ROBDD contains unique relations and if we process the same set of edges twice or more times, we will get the same set of relations but many more triangles.
+
